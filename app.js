@@ -64,3 +64,12 @@ addBtn.addEventListener('click', addExpense);
 
 // Premier affichage
 render();
+
+// Permet de valider en appuyant sur "Entrée" dans les champs de saisie
+[descInput, amountInput].forEach(input => {
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addExpense();
+        }
+    });
+});
