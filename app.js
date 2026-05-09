@@ -1,27 +1,49 @@
-let expenses = [];
-let total = 0;
+// On récupère les données sauvegardées ou on crée un tableau vide
+let expenses = JSON.parse(localStorage.getItem('myExpenses')) || [];
+
+// Fonction pour calculer le total
+const calculateTotal = () => expenses.reduce((acc, curr) => acc + curr.amount, 0);
 
 function addExpense() {
-    const amount = prompt("Montant de la dépense :");
+    const label = prompt("Objet de la dépense (ex: Café, Courses) :");
+    const amount = prompt("Montant (€) :");
     
-    if (amount && !isNaN(amount)) {
-        const val = parseFloat(amount);
-        expenses.push(val);
-        updateUI(val);
+    if (label && amount && !isNaN(amount)) {
+        const newExpense = {
+            id: Date.now(),
+            label: label,
+            amount: parseFloat(amount),
+            date: new Date().toLocaleDateString('fr-FR')
+        };
+        
+        expenses.push(newExpense);
+        saveAndRender();
     }
 }
 
-function updateUI(newVal) {
+function saveAndRender() {
+    // 1. Sauvegarde dans la mémoire du téléphone
+    localStorage.setItem('myExpenses', JSON.stringify(expenses));
+    
+    // 2. Mise à jour de l'affichage
     const list = document.getElementById('expense-list');
     const totalEl = document.getElementById('total-amount');
+    
+    list.innerHTML = ''; // On vide pour reconstruire
+    
+    expenses.slice().reverse().forEach(exp => {
+        const item = document.createElement('div');
+        item.className = 'expense-item';
+        item.style = "display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;";
+        item.innerHTML = `
+            <span>${exp.label} <small>(${exp.date})</small></span>
+            <b>${exp.amount.toFixed(2)} €</b>
+        `;
+        list.appendChild(item);
+    });
 
-    // Ajouter à la liste
-    const item = document.createElement('div');
-    item.className = 'expense-item';
-    item.innerHTML = `<span>Dépense</span> <b>${newVal.toFixed(2)} €</b>`;
-    list.prepend(item);
-
-    // Mettre à jour le total
-    total += newVal;
-    totalEl.innerText = `${total.toFixed(2)} €`;
+    totalEl.innerText = `${calculateTotal().toFixed(2)} €`;
 }
+
+// Charger les données au démarrage
+saveAndRender();
