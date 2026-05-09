@@ -1,0 +1,60 @@
+:root {
+    --md-sys-color-primary: #6750A4;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-surface: #FEF7FF;
+    --md-sys-color-secondary-container: #E8DEF8;
+    --md-sys-color-on-secondary-container: #1D192B;
+}
+
+body {
+    margin: 0;
+    font-family: 'Google Sans', sans-serif;
+    background-color: var(--md-sys-color-surface);
+    color: #1C1B1F;
+}
+
+.app-container {
+    padding: 24px;
+    max-width: 500px;
+    margin: auto;
+}
+
+header {
+    margin-top: 40px;
+    margin-bottom: 32px;
+}
+
+header p { font-size: 0.9rem; opacity: 0.7; margin: 0; }
+header h1 { font-size: 3rem; margin: 8px 0; font-weight: 500; }
+
+.expense-item {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn 0.3s ease;
+}
+
+.fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border: none;
+    font-size: 32px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

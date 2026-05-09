@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Dépenses</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <p>Total du jour</p>
+            <h1 id="total-amount">0,00 €</h1>
+        </header>
+
+        <main id="expense-list">
+            <!-- Les dépenses s'afficheront ici -->
+        </main>
+
+        <button class="fab" onclick="addExpense()">
+            <span>+</span>
+        </button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
