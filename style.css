@@ -1,60 +1,84 @@
 :root {
-    --md-sys-color-primary: #6750A4;
-    --md-sys-color-on-primary: #FFFFFF;
-    --md-sys-color-surface: #FEF7FF;
-    --md-sys-color-secondary-container: #E8DEF8;
-    --md-sys-color-on-secondary-container: #1D192B;
+    /* Couleurs inspirées de Material You (Android) */
+    --primary: #1a73e8;
+    --bg: #f8f9fa;
+    --text: #202124;
+    --danger: #d93025;
 }
 
 body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
     margin: 0;
-    font-family: 'Google Sans', sans-serif;
-    background-color: var(--md-sys-color-surface);
-    color: #1C1B1F;
+    display: flex;
+    justify-content: center;
 }
 
-.app-container {
-    padding: 24px;
+.container {
+    width: 100%;
     max-width: 500px;
-    margin: auto;
+    padding: 15px;
 }
 
-header {
-    margin-top: 40px;
-    margin-bottom: 32px;
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 15px;
 }
 
-header p { font-size: 0.9rem; opacity: 0.7; margin: 0; }
-header h1 { font-size: 3rem; margin: 8px 0; font-weight: 500; }
+h2 { font-size: 1.1rem; margin-top: 0; color: #5f6368; }
+
+input {
+    width: 100%;
+    padding: 14px;
+    margin: 8px 0;
+    border: 1px solid #dadce0;
+    border-radius: 12px;
+    box-sizing: border-box;
+    font-size: 16px; /* Évite le zoom auto sur mobile */
+}
+
+button {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.total-card {
+    background: var(--primary);
+    color: white;
+    text-align: center;
+}
+
+.total-label { font-size: 0.9rem; opacity: 0.9; }
+#total-amount { font-size: 2rem; font-weight: bold; }
 
 .expense-item {
-    background: var(--md-sys-color-secondary-container);
-    color: var(--md-sys-color-on-secondary-container);
-    padding: 16px;
-    border-radius: 16px;
-    margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    animation: slideIn 0.3s ease;
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f3f4;
 }
 
-.fab {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
-    background-color: var(--md-sys-color-primary);
-    color: var(--md-sys-color-on-primary);
+.item-info { display: flex; flex-direction: column; }
+.item-date { font-size: 0.8rem; color: #70757a; }
+
+.delete-btn {
+    color: var(--danger);
+    background: none;
     border: none;
-    font-size: 32px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    width: auto;
+    padding: 5px;
+    font-size: 1.2rem;
     cursor: pointer;
-}
-
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
