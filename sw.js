@@ -1,9 +1,9 @@
 /**
- * 📱 Service Worker - Suivi des Dépenses
- * Permet le fonctionnement offline avec cache first strategy
+ * 📱 Service Worker - Budget Pixel v3.0.0
+ * Cache First Strategy avec Network Fallback
  */
 
-const CACHE_NAME = 'depenses-v2.0.0';
+const CACHE_NAME = 'budget-pixel-v3.0.0';
 const URLS_TO_CACHE = [
     '/',
     '/index.html',
@@ -14,11 +14,11 @@ const URLS_TO_CACHE = [
 ];
 
 // ============================================
-// 📦 INSTALLATION DU SERVICE WORKER
+// 📦 INSTALLATION
 // ============================================
 
 self.addEventListener('install', (event) => {
-    console.log('📦 Installation du Service Worker...');
+    console.log('📦 Installation du Service Worker Budget Pixel...');
     
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -32,7 +32,7 @@ self.addEventListener('install', (event) => {
 });
 
 // ============================================
-// 🔄 ACTIVATION DU SERVICE WORKER
+// 🔄 ACTIVATION
 // ============================================
 
 self.addEventListener('activate', (event) => {
@@ -53,15 +53,9 @@ self.addEventListener('activate', (event) => {
 });
 
 // ============================================
-// 🌐 STRATÉGIE DE FETCH
+// 🌐 FETCH - CACHE FIRST STRATEGY
 // ============================================
 
-/**
- * Cache First, Network Fallback
- * - Essaie d'abord le cache
- * - Si non disponible, récupère du réseau
- * - Ajoute la réponse au cache
- */
 self.addEventListener('fetch', (event) => {
     // Ignorer les requêtes non-GET
     if (event.request.method !== 'GET') {
@@ -73,22 +67,20 @@ self.addEventListener('fetch', (event) => {
             .then((response) => {
                 // Retourner du cache si disponible
                 if (response) {
-                    console.log('✅ Réponse du cache:', event.request.url);
+                    console.log('✅ Cache:', event.request.url);
                     return response;
                 }
 
                 // Sinon, récupérer du réseau
                 return fetch(event.request)
                     .then((response) => {
-                        // Vérifier si la réponse est valide
+                        // Vérifier la réponse
                         if (!response || response.status !== 200 || response.type === 'error') {
                             return response;
                         }
 
-                        // Cloner la réponse
+                        // Cloner et mettre en cache
                         const responseToCache = response.clone();
-
-                        // Ajouter au cache
                         caches.open(CACHE_NAME)
                             .then((cache) => {
                                 cache.put(event.request, responseToCache);
@@ -97,9 +89,8 @@ self.addEventListener('fetch', (event) => {
                         return response;
                     })
                     .catch(() => {
-                        // Offline fallback
-                        console.warn('⚠️ Mode offline - URL non disponible:', event.request.url);
-                        return new Response('Offline - Contenu non disponible', {
+                        console.warn('⚠️ Mode offline:', event.request.url);
+                        return new Response('Mode offline - Contenu non disponible', {
                             status: 503,
                             statusText: 'Service Unavailable'
                         });
@@ -108,4 +99,4 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-console.log('✅ Service Worker prêt - Suivi des Dépenses v2.0.0');
+console.log('✅ Service Worker Budget Pixel v3.0.0 prêt');
