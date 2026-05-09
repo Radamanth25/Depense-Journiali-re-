@@ -1,0 +1,45 @@
+# Fichiers à ignorer
+
+# Dépendances
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE et éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Systèmes d'exploitation
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+desktop.ini
+
+# Fichiers locaux
+.env
+.env.local
+*.log
+*.pid
+*.seed
+
+# Build
+dist/
+build/
+.cache/
+
+# Tests
+coverage/
+.nyc_output/
+
+# Outils
+.eslintcache
+.prettier-cache
