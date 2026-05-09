@@ -5,30 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Budget Pixel</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="description" content="Suivi dépenses journalière - Application pour gérer vos dépenses quotidiennes">
 </head>
 <body>
 
     <div class="container">
         <div class="card">
             <h2>Nouvelle dépense</h2>
-            <input type="text" id="desc" placeholder="Objet (ex: Cinéma)" autocomplete="off">
-            <input type="number" id="amount" placeholder="Montant en €" step="0.01">
-            <button id="add-btn">Ajouter</button>
+            <input type="text" id="desc" placeholder="Objet (ex: Cinéma)" autocomplete="off" aria-label="Description de la dépense" required>
+            <input type="number" id="amount" placeholder="Montant en €" step="0.01" aria-label="Montant en euros" required>
+            <button id="add-btn" aria-label="Ajouter une nouvelle dépense">Ajouter</button>
         </div>
 
         <div class="card total-card">
             <div class="total-label">Total dépensé</div>
-            <div id="total-amount">0.00 €</div>
+            <div id="total-amount" aria-live="polite" aria-label="Total des dépenses">0.00 €</div>
         </div>
 
         <div class="card">
             <h2>Historique</h2>
-            <div id="expense-list">
+            <div id="expense-list" aria-live="polite" aria-label="Liste des dépenses">
                 <!-- Les dépenses s'afficheront ici -->
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
