@@ -1,0 +1,22 @@
+{
+  "name": "depense-journaliere",
+  "version": "2.0.0",
+  "description": "Suivi dépenses journalière - Application PWA pour gérer vos dépenses quotidiennes",
+  "author": "Radamanth25",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Radamanth25/Depense-Journiali-re-"
+  },
+  "keywords": [
+    "dépenses",
+    "budget",
+    "pwa",
+    "finances",
+    "suivi",
+    "javascript"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
