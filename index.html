@@ -3,27 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes Dépenses</title>
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <title>Mon Budget Pixel</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <p>Total du jour</p>
-            <h1 id="total-amount">0,00 €</h1>
-        </header>
 
-        <main id="expense-list">
-            <!-- Les dépenses s'afficheront ici -->
-        </main>
+    <div class="container">
+        <div class="card">
+            <h2>Nouvelle dépense</h2>
+            <input type="text" id="desc" placeholder="Objet (ex: Cinéma)" autocomplete="off">
+            <input type="number" id="amount" placeholder="Montant en €" step="0.01">
+            <button id="add-btn">Ajouter</button>
+        </div>
 
-        <button class="fab" onclick="addExpense()">
-            <span>+</span>
-        </button>
+        <div class="card total-card">
+            <div class="total-label">Total dépensé</div>
+            <div id="total-amount">0.00 €</div>
+        </div>
+
+        <div class="card">
+            <h2>Historique</h2>
+            <div id="expense-list">
+                <!-- Les dépenses s'afficheront ici -->
+            </div>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
