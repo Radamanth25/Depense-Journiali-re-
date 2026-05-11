@@ -709,3 +709,21 @@ button:active {
         border: 1px solid #ccc;
     }
 }
+
+/* style.css */
+/* ============================================
+   CHART STYLES
+   ============================================ */
+
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px; /* Hauteur par défaut fixe */
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .chart-container {
+        height: 250px; /* Plus petit sur mobile */
+    }
+}

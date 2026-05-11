@@ -103,42 +103,24 @@
         </section>
 
         <!-- TAB 2: STATISTICS -->
-        <section id="stats-tab" class="tab-content">
+<section id="stats-tab" class="tab-content">
             <div class="card stats-overview">
                 <h2>📈 Vue d'ensemble</h2>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-label">Dépense totale</div>
-                        <div id="stat-total" class="stat-value">0.00 €</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Nombre de dépenses</div>
-                        <div id="stat-count" class="stat-value">0</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Dépense moyenne</div>
-                        <div id="stat-average" class="stat-value">0.00 €</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Dépense max</div>
-                        <div id="stat-max" class="stat-value">0.00 €</div>
-                    </div>
                 </div>
-            </div>
 
             <div class="card stats-category">
-                <h2>🏷️ Par catégorie</h2>
-                <div id="category-stats" class="category-stats">
-                    <div class="empty-state">Aucune donnée</div>
+                <h2>🏷️ Répartition par catégorie</h2>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
                 </div>
-            </div>
+                </div>
 
             <div class="card stats-daily">
-                <h2>📅 Dépenses quotidiennes</h2>
-                <div id="daily-stats" class="daily-stats">
-                    <div class="empty-state">Aucune donnée</div>
+                <h2>📅 Évolution quotidienne (7 derniers jours)</h2>
+                <div class="chart-container">
+                    <canvas id="dailyChart"></canvas>
                 </div>
-            </div>
+                </div>
         </section>
 
         <!-- TAB 3: SETTINGS -->
@@ -183,5 +165,13 @@
     </footer>
 
     <script src="app.js"></script>
+
+    <footer class="footer">
+        <p>💰 Budget Pixel v3.0.0 | Développé avec ❤️</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
 </body>
 </html>
