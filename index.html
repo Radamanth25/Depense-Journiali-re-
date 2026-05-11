@@ -3,175 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1a73e8">
-    <meta name="description" content="Suivi dépenses journalière - Application PWA pour gérer vos dépenses quotidiennes">
-    <title>💰 Suivi des Dépenses</title>
-    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <title>💎 Budget Pixel - Modern Edition</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Header Navigation -->
+
     <header class="header">
-        <div class="header-content">
-            <h1>💰 Budget Pixel</h1>
+        <div class="container">
+            <h1>Budget Pixel</h1>
             <nav class="nav-tabs">
-                <button class="nav-btn active" data-tab="expenses" aria-label="Dépenses">📊 Dépenses</button>
-                <button class="nav-btn" data-tab="stats" aria-label="Statistiques">📈 Stats</button>
-                <button class="nav-btn" data-tab="settings" aria-label="Paramètres">⚙️ Paramètres</button>
+                <button class="nav-btn active" data-tab="expenses">DÉPENSES</button>
+                <button class="nav-btn" data-tab="stats">STATS</button>
+                <button class="nav-btn" data-tab="yearly">ANNÉE</button>
             </nav>
         </div>
     </header>
 
     <main class="container">
-        <!-- TAB 1: EXPENSES -->
+        <div id="month-selector" class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem; margin-bottom: 1rem;">
+            <button id="prev-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&lt;</button>
+            <span id="current-month-display" style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;"></span>
+            <button id="next-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&gt;</button>
+        </div>
+        
         <section id="expenses-tab" class="tab-content active">
-            <!-- Budget Section -->
-            <div class="card budget-card">
-                <div class="budget-info">
-                    <div class="budget-left">
-                        <label for="budget-input">Budget limite (€)</label>
-                        <input type="number" id="budget-input" placeholder="2000" step="10" min="0">
+            <div class="card">
+                <div class="budget-widget">
+                    <div class="stat-box">
+                        <span class="stat-label">Budget</span>
+                        <span id="stat-budget" class="stat-value">0 €</span>
                     </div>
-                    <div class="budget-display">
-                        <div class="total-label">Total dépensé</div>
-                        <div id="total-amount" class="total-amount">0.00 €</div>
-                        <div id="budget-status" class="budget-status"></div>
+                    <div class="stat-box">
+                        <span class="stat-label">Dépensé</span>
+                        <span id="stat-spent" class="stat-value">0 €</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Restant</span>
+                        <span id="stat-remaining" class="stat-value remaining">0 €</span>
                     </div>
                 </div>
-                <div id="budget-bar" class="budget-bar">
-                    <div id="budget-progress" class="budget-progress" style="width: 0%"></div>
+                <div class="budget-bar">
+                    <div id="budget-progress" class="budget-progress"></div>
                 </div>
             </div>
 
-            <!-- Add Expense Form -->
-            <div class="card form-card">
-                <h2>➕ Nouvelle dépense</h2>
-                <div class="form-group">
-                    <input type="text" id="desc" placeholder="Description" autocomplete="off" aria-label="Description" required>
-                    <input type="number" id="amount" placeholder="Montant €" step="0.01" min="0" aria-label="Montant" required>
-                    <select id="category" aria-label="Catégorie" required>
-                        <option value="">Catégorie...</option>
-                        <option value="🍽️ Alimentation">🍽️ Alimentation</option>
-                        <option value="🚗 Transport">🚗 Transport</option>
-                        <option value="🎮 Loisirs">🎮 Loisirs</option>
-                        <option value="🏥 Santé">🏥 Santé</option>
-                        <option value="🏠 Logement">🏠 Logement</option>
-                        <option value="👕 Vêtements">👕 Vêtements</option>
-                        <option value="📚 Éducation">📚 Éducation</option>
-                        <option value="💼 Travail">💼 Travail</option>
-                        <option value="🎁 Autre">🎁 Autre</option>
-                    </select>
-                </div>
-                <button id="add-btn" class="btn-primary">➕ Ajouter</button>
+            <div class="card">
+                <input type="text" id="desc" placeholder="Désignation (ex: Netflix)">
+                <input type="number" id="amount" placeholder="Montant (€)">
+                <select id="category">
+                    <option value="🏠 LOGEMENT">🏠 LOGEMENT</option>
+                    <option value="🍽️ ALIMENTATION">🍽️ ALIMENTATION</option>
+                    <option value="🚗 TRANSPORT">🚗 TRANSPORT</option>
+                    <option value="🎮 LOISIRS">🎮 LOISIRS</option>
+                    <option value="🏥 SANTÉ">🏥 SANTÉ</option>
+                    <option value="AUTRE">✨ AUTRE</option>
+                </select>
+                <button id="add-btn" class="btn-primary">Ajouter la dépense</button>
             </div>
 
-            <!-- Filters Section -->
-            <div class="card filters-card">
-                <h3>🔍 Filtres</h3>
-                <div class="filters-group">
-                    <input type="text" id="search-input" placeholder="🔎 Rechercher..." aria-label="Recherche">
-                    <select id="filter-category" aria-label="Filtrer par catégorie">
-                        <option value="">Toutes les catégories</option>
-                        <option value="🍽️ Alimentation">🍽️ Alimentation</option>
-                        <option value="🚗 Transport">🚗 Transport</option>
-                        <option value="🎮 Loisirs">🎮 Loisirs</option>
-                        <option value="🏥 Santé">🏥 Santé</option>
-                        <option value="🏠 Logement">🏠 Logement</option>
-                        <option value="👕 Vêtements">👕 Vêtements</option>
-                        <option value="📚 Éducation">📚 Éducation</option>
-                        <option value="💼 Travail">💼 Travail</option>
-                        <option value="🎁 Autre">🎁 Autre</option>
-                    </select>
-                    <select id="filter-period" aria-label="Filtrer par période">
-                        <option value="all">Toutes les périodes</option>
-                        <option value="today">Aujourd'hui</option>
-                        <option value="week">Cette semaine</option>
-                        <option value="month">Ce mois</option>
-                        <option value="year">Cette année</option>
-                    </select>
-                    <button id="reset-filters" class="btn-secondary">🔄 Réinitialiser</button>
-                </div>
-            </div>
-
-            <!-- Expenses List -->
-            <div class="card expenses-card">
-                <h2>📋 Historique</h2>
-                <div id="expense-list" class="expense-list" aria-live="polite" aria-label="Liste des dépenses">
-                    <div class="empty-state">Aucune dépense enregistrée</div>
-                </div>
-            </div>
+            <div id="expense-list"></div>
         </section>
 
-        <!-- TAB 2: STATISTICS -->
-<section id="stats-tab" class="tab-content">
-            <div class="card stats-overview">
-                <h2>📈 Vue d'ensemble</h2>
+        <section id="stats-tab" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="font-size: 0.7rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Reste à vivre (Mois)</h3>
+                    <span id="budget-diff-value" style="font-weight: 900; font-size: 1.2rem;">0.00 €</span>
                 </div>
+                <div style="height: 180px; position: relative;">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
 
-            <div class="card stats-category">
-                <h2>🏷️ Répartition par catégorie</h2>
-                <div class="chart-container">
+            <div class="card">
+                <h3 style="text-align: center; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Répartition par catégorie</h3>
+                <div style="height: 250px; position: relative;">
                     <canvas id="categoryChart"></canvas>
                 </div>
-                </div>
-
-            <div class="card stats-daily">
-                <h2>📅 Évolution quotidienne (7 derniers jours)</h2>
-                <div class="chart-container">
-                    <canvas id="dailyChart"></canvas>
-                </div>
-                </div>
+            </div>
+            
+            <div class="card">
+                <label for="budget-input" style="display: block; margin-bottom: 10px; font-size: 0.7rem; color: var(--text-mid); font-weight: 700; text-transform: uppercase;">Modifier mon budget mensuel (€)</label>
+                <input type="number" id="budget-input" placeholder="Ex: 3000">
+            </div>
         </section>
 
-        <!-- TAB 3: SETTINGS -->
-        <section id="settings-tab" class="tab-content">
-            <div class="card settings-card">
-                <h2>⚙️ Paramètres</h2>
-                
-                <div class="settings-group">
-                    <h3>💾 Données</h3>
-                    <button id="export-btn" class="btn-secondary">📥 Exporter en JSON</button>
-                    <button id="import-btn" class="btn-secondary">📤 Importer JSON</button>
-                    <input type="file" id="import-file" accept=".json" style="display: none;">
+        <section id="yearly-tab" class="tab-content">
+            <div class="card">
+                <h3 style="text-align: center; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Vue d'ensemble de l'année <span id="yearly-display-year"></span></h3>
+                <div style="height: 350px; position: relative;">
+                    <canvas id="yearlyChart"></canvas>
                 </div>
+            </div>
 
-                <div class="settings-group">
-                    <h3>🗑️ Données avancées</h3>
-                    <button id="clear-all-btn" class="btn-danger">🗑️ Supprimer toutes les dépenses</button>
-                </div>
-
-                <div class="settings-group">
-                    <h3>🔔 Notifications</h3>
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="notify-budget" checked>
-                        <span>Alerte budget dépassé</span>
-                    </label>
-                </div>
-
-                <div class="settings-group">
-                    <h3>📱 À propos</h3>
-                    <div id="app-version" class="version-info">Chargement...</div>
-                </div>
+            <div class="card">
+                <p style="font-size: 0.7rem; color: var(--text-mid); margin-bottom: 1rem; text-align: center;">Générez des exemples pour tester le graphique annuel sur l'année en cours.</p>
+                <button onclick="injectSampleData()" class="btn-primary" style="background: var(--secondary-accent); font-size: 0.7rem; padding: 0.5rem;">Simuler dépenses Janvier à Mai 2026</button>
             </div>
         </section>
     </main>
 
-    <!-- Toast Notifications -->
     <div id="toast" class="toast"></div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>💰 Budget Pixel v3.0.0 | Développé avec ❤️</p>
+    <footer style="text-align: center; padding: 2rem; color: var(--text-low); font-size: 0.7rem; letter-spacing: 1px;">
+        <div id="app-version">MODERN EDITION v5.3.1</div>
     </footer>
 
     <script src="app.js"></script>
-
-    <footer class="footer">
-        <p>💰 Budget Pixel v3.0.0 | Développé avec ❤️</p>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="app.js"></script>
-</body>
 </body>
 </html>
