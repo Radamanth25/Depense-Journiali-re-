@@ -1,227 +1,266 @@
 /**
  * 💰 Budget Pixel - Application de suivi des dépenses
- * Version 3.1.0 - Intégration des Graphiques avec Chart.js
+ * Version 3.1.0 - Jeu de données de test inclus
  */
 
-// ... APP_CONFIG et AppState (restent identiques) ...
+// ============================================
+// ⚙️ CONFIGURATION & ETAT
+// ============================================
 
 const APP_CONFIG = {
-    version: '3.1.0', // Mise à jour de la version
+    version: '3.1.0',
     lastUpdated: new Date().toISOString(),
     name: 'Budget Pixel',
     storageKey: 'budgetPixelExpenses',
     budgetKey: 'budgetPixelBudget'
 };
 
-// ... AppState (reste identique) ...
+// Données de test pour le développement
+const MOCK_DATA = [
+    { id: 1, description: "Courses Hebdo", amount: 85.50, category: "Alimentation", timestamp: new Date(Date.now() - 86400000 * 1).toISOString() },
+    { id: 2, description: "Loyer", amount: 650.00, category: "Logement", timestamp: new Date(Date.now() - 86400000 * 10).toISOString() },
+    { id: 3, description: "Netflix", amount: 13.99, category: "Loisirs", timestamp: new Date(Date.now() - 86400000 * 2).toISOString() },
+    { id: 4, description: "Essence", amount: 60.00, category: "Transport", timestamp: new Date(Date.now() - 86400000 * 3).toISOString() },
+    { id: 5, description: "Restaurant Italien", amount: 45.00, category: "Alimentation", timestamp: new Date(Date.now() - 86400000 * 0).toISOString() },
+    { id: 6, description: "Pharmacie", amount: 12.30, category: "Santé", timestamp: new Date(Date.now() - 86400000 * 4).toISOString() },
+    { id: 7, description: "Facture Électricité", amount: 92.00, category: "Factures", timestamp: new Date(Date.now() - 86400000 * 5).toISOString() },
+    { id: 8, description: "Boulangerie", amount: 4.50, category: "Alimentation", timestamp: new Date(Date.now() - 86400000 * 0).toISOString() },
+    { id: 9, description: "Ciné avec amis", amount: 24.00, category: "Loisirs", timestamp: new Date(Date.now() - 86400000 * 1).toISOString() },
+    { id: 10, description: "Achat Amazon (Livre)", amount: 15.00, category: "Loisirs", timestamp: new Date(Date.now() - 86400000 * 6).toISOString() }
+];
+
+let AppState = {
+    expenses: JSON.parse(localStorage.getItem(APP_CONFIG.storageKey)) || [],
+    budget: parseFloat(localStorage.getItem(APP_CONFIG.budgetKey)) || 1000,
+    activeTab: 'expenses'
+};
+
+// Injection automatique si vide
+if (AppState.expenses.length === 0) {
+    AppState.expenses = MOCK_DATA;
+    localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(MOCK_DATA));
+}
 
 // ============================================
-// 📱 DOM ELEMENTS
+// 📱 ELEMENTS DU DOM
 // ============================================
 
 const elements = {
-    // ... formulaires, display, filters ...
-
-    // Stats (MIS À JOUR POUR LES CANVAS)
-    statTotal: document.getElementById('stat-total'),
-    statCount: document.getElementById('stat-count'),
-    statAverage: document.getElementById('stat-average'),
-    statMax: document.getElementById('stat-max'),
-    // Nouveaux éléments Canvas
+    tabs: document.querySelectorAll('.tab-content'),
+    navBtns: document.querySelectorAll('.nav-btn'),
+    form: {
+        desc: document.getElementById('desc'),
+        amount: document.getElementById('amount'),
+        category: document.getElementById('category'),
+        addBtn: document.getElementById('add-btn')
+    },
+    budgetInput: document.getElementById('budget-input'),
+    totalAmount: document.getElementById('total-amount'),
+    budgetStatus: document.getElementById('budget-status'),
+    budgetProgress: document.getElementById('budget-progress'),
+    searchInput: document.getElementById('search-input'),
+    filterCategory: document.getElementById('filter-category'),
+    filterPeriod: document.getElementById('filter-period'),
+    resetFiltersBtn: document.getElementById('reset-filters'),
+    expenseList: document.getElementById('expense-list'),
     categoryChart: document.getElementById('categoryChart'),
     dailyChart: document.getElementById('dailyChart'),
-    
-    // ... settings, navigation, toast ...
+    appVersion: document.getElementById('app-version'),
+    toast: document.getElementById('toast')
 };
 
-// Variable globale pour stocker les instances des graphiques
-let charts = {
-    category: null,
-    daily: null
-};
-
-// ... UTILITY FUNCTIONS (restent identiques : formatDate, shoxToast, escapeHTML...) ...
-
-// ... DATA MANAGEMENT (restent identiques : saveExpenses, addExpense, deleteExpense...) ...
+let charts = { category: null, daily: null };
 
 // ============================================
-// 🎯 RENDERING FUNCTIONS
+// 🛠️ UTILITAIRES
 // ============================================
 
-// ... renderExpensesList et renderBudget (restent identiques) ...
+function showToast(message, type = 'success') {
+    elements.toast.textContent = message;
+    elements.toast.className = `toast show ${type}`;
+    setTimeout(() => elements.toast.className = 'toast', 3000);
+}
 
-/**
- * Affiche les statistiques avec des graphiques Chart.js
- */
-function renderStats() {
-    console.log('📈 Mise à jour des graphiques...');
-    const total = AppState.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const count = AppState.expenses.length;
-    const average = count > 0 ? total / count : 0;
-    const max = count > 0 ? Math.max(...AppState.expenses.map(e => e.amount)) : 0;
-    
-    elements.statTotal.textContent = total.toFixed(2) + ' €';
-    elements.statCount.textContent = count;
-    elements.statAverage.textContent = average.toFixed(2) + ' €';
-    elements.statMax.textContent = max.toFixed(2) + ' €';
+function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 
-    // Si aucune dépense, on ne dessine pas les graphiques
-    if (count === 0) {
-        if (charts.category) charts.category.destroy();
-        if (charts.daily) charts.daily.destroy();
-        // Optionnel : afficher un message "Aucune donnée" par-dessus les canvas
+function escapeHTML(str) {
+    const p = document.createElement('p');
+    p.textContent = str;
+    return p.innerHTML;
+}
+
+// ============================================
+// 💾 GESTION DES DONNÉES
+// ============================================
+
+function saveExpenses() {
+    localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(AppState.expenses));
+}
+
+function addExpense() {
+    const desc = elements.form.desc.value.trim();
+    const amount = parseFloat(elements.form.amount.value);
+    const category = elements.form.category.value;
+
+    if (!desc || isNaN(amount) || amount <= 0 || !category) {
+        showToast('Veuillez remplir tous les champs', 'error');
         return;
     }
 
-    // 1. Préparation des données pour le graphique par catégorie
-    const byCategory = {};
-    AppState.expenses.forEach(exp => {
-        byCategory[exp.category] = (byCategory[exp.category] || 0) + exp.amount;
-    });
-    const catLabels = Object.keys(byCategory);
-    const catData = Object.values(byCategory);
+    const newExpense = {
+        id: Date.now(),
+        description: desc,
+        amount: amount,
+        category: category,
+        timestamp: new Date().toISOString()
+    };
 
-    // 2. Préparation des données pour le graphique quotidien (7 derniers jours)
-    const byDay = {};
+    AppState.expenses.unshift(newExpense);
+    saveExpenses();
+    renderAll();
+    
+    elements.form.desc.value = '';
+    elements.form.amount.value = '';
+    showToast('Dépense ajoutée !');
+}
+
+function deleteExpense(id) {
+    AppState.expenses = AppState.expenses.filter(exp => exp.id !== id);
+    saveExpenses();
+    renderAll();
+    showToast('Dépense supprimée', 'warning');
+}
+
+// ============================================
+// 📊 RENDU DES GRAPHIQUES
+// ============================================
+
+function updateCharts() {
+    if (AppState.expenses.length === 0 || !window.Chart) return;
+
+    // Chart 1: Répartition par Catégorie
+    const catDataMap = {};
     AppState.expenses.forEach(exp => {
-        // Utiliser timestamp pour trier chronologiquement, pas la date formatée
-        const dateKey = exp.timestamp.split('T')[0]; // YYYY-MM-DD
-        byDay[dateKey] = (byDay[dateKey] || 0) + exp.amount;
+        catDataMap[exp.category] = (catDataMap[exp.category] || 0) + exp.amount;
     });
 
-    // Créer une liste des 7 derniers jours (chronologique)
-    const dailyLabels = [];
+    if (charts.category) charts.category.destroy();
+    charts.category = new Chart(elements.categoryChart, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(catDataMap),
+            datasets: [{
+                data: Object.values(catDataMap),
+                backgroundColor: ['#1a73e8', '#34a853', '#fbbc04', '#ea4335', '#a142f4', '#ff6d00'],
+                borderColor: getComputedStyle(document.body).getPropertyValue('--bg')
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Chart 2: 7 derniers jours
     const dailyData = [];
+    const dailyLabels = [];
     for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const dateKey = d.toISOString().split('T')[0];
+        dailyLabels.push(d.toLocaleDateString('fr-FR', { weekday: 'short' }));
         
-        // Label formaté pour l'affichage (JJ/MM)
-        const displayLabel = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit' }).format(d);
-        dailyLabels.push(displayLabel);
-        dailyData.push(byDay[dateKey] || 0); // 0 si aucune dépense ce jour-là
+        const total = AppState.expenses
+            .filter(exp => exp.timestamp.startsWith(dateKey))
+            .reduce((s, e) => s + e.amount, 0);
+        dailyData.push(total);
     }
 
-    // 3. Dessiner/Mettre à jour le graphique par catégorie (Doughnut)
-    if (charts.category) charts.category.destroy(); // Important !
-    charts.category = new Chart(elements.categoryChart, {
-        type: 'doughnut',
-        data: {
-            labels: catLabels,
-            datasets: [{
-                label: 'Dépenses (€)',
-                data: catData,
-                backgroundColor: [
-                    '#1a73e8', // primary
-                    '#0d652d', // success
-                    '#f57f17', // warning
-                    '#d93025', // danger
-                    '#a142f4', // purple
-                    '#ff6d00', // orange
-                    '#24c1e0'  // cyan
-                ],
-                borderWidth: 2,
-                borderColor: getComputedStyle(document.body).getPropertyValue('--bg') // Adaptation dark mode
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: getComputedStyle(document.body).getPropertyValue('--text') // Adaptation dark mode
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const value = context.raw;
-                            const percent = ((value / total) * 100).toFixed(1);
-                            return `${context.label}: ${value.toFixed(2)} € (${percent}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    // 4. Dessiner/Mettre à jour le graphique quotidien (Bar)
-    if (charts.daily) charts.daily.destroy(); // Important !
+    if (charts.daily) charts.daily.destroy();
     charts.daily = new Chart(elements.dailyChart, {
         type: 'bar',
         data: {
             labels: dailyLabels,
-            datasets: [{
-                label: 'Dépenses quotidiennes (€)',
-                data: dailyData,
-                backgroundColor: '#1a73e8',
-                borderRadius: 6
-            }]
+            datasets: [{ label: 'Dépenses (€)', data: dailyData, backgroundColor: '#1a73e8', borderRadius: 4 }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: getComputedStyle(document.body).getPropertyValue('--text-secondary') // Adaptation dark mode
-                    },
-                    grid: {
-                        color: getComputedStyle(document.body).getPropertyValue('--border') // Adaptation dark mode
-                    }
-                },
-                x: {
-                    ticks: {
-                        color: getComputedStyle(document.body).getPropertyValue('--text-secondary') // Adaptation dark mode
-                    },
-                    grid: {
-                        display: false // Masquer la grille X pour plus de clarté
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false // Pas besoin de légende pour une seule série
-                }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
 
-// ... render principal (reste identique, mais renderStats est maintenant appelé différemment) ...
+// ============================================
+// 🎯 RENDU UI
+// ============================================
+
+function renderExpensesList() {
+    const searchTerm = elements.searchInput.value.toLowerCase();
+    const catFilter = elements.filterCategory.value;
+
+    let filtered = AppState.expenses.filter(exp => {
+        const matchesSearch = exp.description.toLowerCase().includes(searchTerm);
+        const matchesCat = !catFilter || exp.category === catFilter;
+        return matchesSearch && matchesCat;
+    });
+
+    elements.expenseList.innerHTML = filtered.map(exp => `
+        <div class="expense-item">
+            <div class="item-left">
+                <div class="item-category">${escapeHTML(exp.category)}</div>
+                <div class="item-details">
+                    <strong>${escapeHTML(exp.description)}</strong>
+                    <span class="item-date">${formatDate(exp.timestamp)}</span>
+                </div>
+            </div>
+            <div class="item-right">
+                <div class="item-amount">${exp.amount.toFixed(2)} €</div>
+                <button class="delete-btn" onclick="deleteExpense(${exp.id})">×</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderBudget() {
+    const total = AppState.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    elements.totalAmount.textContent = `${total.toFixed(2)} €`;
+    
+    if (AppState.budget > 0) {
+        const percent = Math.min((total / AppState.budget) * 100, 100);
+        elements.budgetProgress.style.width = `${percent}%`;
+        elements.budgetStatus.textContent = total > AppState.budget ? "Budget dépassé !" : `Reste: ${(AppState.budget - total).toFixed(2)} €`;
+        elements.budgetStatus.className = `budget-status ${total > AppState.budget ? 'danger' : 'success'}`;
+    }
+}
+
+function renderAll() {
+    renderExpensesList();
+    renderBudget();
+    if (AppState.activeTab === 'stats') updateCharts();
+}
 
 // ============================================
-// 🚀 INITIALIZATION
+// 🚀 INITIALISATION
 // ============================================
 
 function init() {
-    // Afficher la version (v3.1.0)
-    elements.appVersion.textContent = `v${APP_CONFIG.version} • ${formatDate(APP_CONFIG.lastUpdated)}`;
-    
-    // ... Charger le budget et enregistrer le service worker ...
-    
-    // Le Service Worker peut aussi mettre en cache le script de Chart.js
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('✅ Service Worker enregistré'))
-            .catch(err => console.warn('⚠️ Service Worker non enregistré:', err));
-    }
+    elements.navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.dataset.tab;
+            AppState.activeTab = tabId;
+            elements.navBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            elements.tabs.forEach(tab => tab.classList.toggle('active', tab.id === `${tabId}-tab`));
+            if (tabId === 'stats') updateCharts();
+        });
+    });
 
-    // Le rendu initial n'appelle pas renderStats()
-    // Car les canvas ne sont pas visibles et Chart.js a besoin qu'ils le soient pour bien calculer leur taille
-    renderExpensesList();
-    renderBudget();
-    
-    console.log('🚀 Budget Pixel v3.1.0 initialisé');
+    elements.form.addBtn.addEventListener('click', addExpense);
+    elements.budgetInput.value = AppState.budget;
+    elements.budgetInput.addEventListener('input', (e) => {
+        AppState.budget = parseFloat(e.target.value) || 0;
+        localStorage.setItem(APP_CONFIG.budgetKey, AppState.budget);
+        renderBudget();
+    });
+
+    elements.appVersion.textContent = `v${APP_CONFIG.version}`;
+    renderAll();
 }
 
-// Lancer l'app quand le DOM est chargé
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
-}
+document.addEventListener('DOMContentLoaded', init);
