@@ -130,9 +130,38 @@ elements.todayBtn.onclick = () => {
     updateMonthDisplay();
 };
 
+// 👆 Gestes de balayage (swipe) pour changer de mois sur mobile
+let touchStartX = 0;
+const SWIPE_THRESHOLD = 50; // Distance minimale pour considérer un balayage
+
+elements.monthSelector.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+});
+
+elements.monthSelector.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diffX = touchEndX - touchStartX;
+
+    if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+        if (diffX > 0) {
+            // Balayage vers la droite (mois précédent)
+            elements.prevMonthBtn.click();
+        } else {
+            // Balayage vers la gauche (mois suivant)
+            elements.nextMonthBtn.click();
+        }
+    }
+    touchStartX = 0; // Réinitialiser
+});
+
 function render() {
     const viewMonth = AppState.currentViewDate.getMonth();
     const viewYear = AppState.currentViewDate.getFullYear();
+
+    // 🕒 Masquer le bouton "Aujourd'hui" si on est déjà sur le mois actuel ou en vue annuelle
+    const now = new Date();
+    const isCurrentMonth = viewMonth === now.getMonth() && viewYear === now.getFullYear();
+    elements.todayBtn.style.display = (isCurrentMonth || AppState.activeTab === 'yearly') ? 'none' : 'block';
 
     const monthlyExpenses = AppState.expenses.filter(exp => {
         const d = new Date(exp.timestamp);
