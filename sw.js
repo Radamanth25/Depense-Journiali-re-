@@ -1,9 +1,9 @@
 /**
  * 📱 Service Worker - Budget Pixel v3.0.0
- * Cache First Strategy avec Network Fallback
+ * Network First Strategy (Privilégie le contenu frais)
  */
 
-const CACHE_NAME = 'budget-pixel-v3.0.0';
+const CACHE_NAME = 'budget-pixel-v3.1.0';
 const URLS_TO_CACHE = [
     '/',
     '/index.html',

@@ -20,14 +20,17 @@
                 <button class="nav-btn" data-tab="yearly">ANNÉE</button>
             </nav>
         </div>
+        <div id="month-selector" class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem;">
+            <button id="prev-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&lt;</button>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <span id="current-month-display" style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;"></span>
+                <button id="today-btn" class="nav-btn" style="padding: 0.2rem 0.6rem; font-size: 0.55rem; border: none; background: rgba(255,255,255,0.1);">Aujourd'hui</button>
+            </div>
+            <button id="next-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&gt;</button>
+        </div>
     </header>
 
     <main class="container">
-        <div id="month-selector" class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem; margin-bottom: 1rem;">
-            <button id="prev-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&lt;</button>
-            <span id="current-month-display" style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;"></span>
-            <button id="next-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&gt;</button>
-        </div>
         
         <section id="expenses-tab" class="tab-content active">
             <div class="card">
@@ -88,6 +91,18 @@
             <div class="card">
                 <label for="budget-input" style="display: block; margin-bottom: 10px; font-size: 0.7rem; color: var(--text-mid); font-weight: 700; text-transform: uppercase;">Modifier mon budget mensuel (€)</label>
                 <input type="number" id="budget-input" placeholder="Ex: 3000">
+            </div>
+
+            <div class="card">
+                <h3 style="text-align: center; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Évolution quotidienne (€)</h3>
+                <div style="height: 220px; position: relative;">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card" style="border-color: var(--danger); border-style: dashed;">
+                <h3 style="font-size: 0.7rem; color: var(--danger); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;">Zone de danger</h3>
+                <button onclick="resetExpenses()" class="btn-primary" style="background: var(--danger); font-size: 0.7rem; padding: 0.6rem;">Réinitialiser toutes les données</button>
             </div>
         </section>
 

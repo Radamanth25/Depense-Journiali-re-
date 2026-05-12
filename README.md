@@ -5,8 +5,10 @@ Application PWA (Progressive Web App) pour suivre facilement vos dépenses quoti
 ## 🚀 Fonctionnalités
 
 - ✅ **Ajout de dépenses** - Enregistrez rapidement vos dépenses
+- ✨ **Données d'exemple** - Des dépenses pré-remplies pour démarrer rapidement
 - 💾 **Stockage local** - Vos données sont sauvegardées localement (localStorage)
-- 📱 **Responsive** - Fonctionne sur tous les appareils (mobile, tablette, desktop)
+- 📥 **Export CSV** - Sauvegardez vos données dans un fichier externe (Excel)
+-  **Responsive** - Fonctionne sur tous les appareils (mobile, tablette, desktop)
 - 🌐 **Mode offline** - Fonctionne sans connexion internet (PWA)
 - 🎨 **Design moderne** - Interface inspirée de Material Design 3
 - ♿ **Accessibilité** - Conforme aux normes WCAG
@@ -115,7 +117,7 @@ Application PWA (Progressive Web App) pour suivre facilement vos dépenses quoti
 
 ## 💾 Stockage des données
 
-Les données sont stockées localement dans `localStorage` sous la clé `myExpenses`. 
+Les données sont stockées localement dans `localStorage` sous la clé `budgetPixelExpenses`. 
 
 **Important** : Les données ne sont jamais envoyées à un serveur externe.
 

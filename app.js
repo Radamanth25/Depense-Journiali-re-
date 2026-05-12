@@ -6,7 +6,9 @@
 const APP_CONFIG = {
     version: '5.3.1',
     storageKey: 'budgetPixelExpenses',
-    budgetKey: 'budgetPixelBudget'
+    budgetKey: 'budgetPixelBudget',
+    draftKey: 'budgetPixelDraft',
+    tabKey: 'budgetPixelActiveTab'
 };
 
 const CATEGORY_THEMES = {
@@ -21,7 +23,7 @@ const CATEGORY_THEMES = {
 let AppState = {
     expenses: JSON.parse(localStorage.getItem(APP_CONFIG.storageKey)) || [],
     budget: parseFloat(localStorage.getItem(APP_CONFIG.budgetKey)) || 3000,
-    activeTab: 'expenses',
+    activeTab: localStorage.getItem(APP_CONFIG.tabKey) || 'expenses',
     currentViewDate: new Date()
 };
 
@@ -32,6 +34,7 @@ const elements = {
     monthDisplay: document.getElementById('current-month-display'),
     prevMonthBtn: document.getElementById('prev-month'),
     nextMonthBtn: document.getElementById('next-month'),
+    todayBtn: document.getElementById('today-btn'),
     expenseList: document.getElementById('expense-list'),
     statBudget: document.getElementById('stat-budget'),
     statSpent: document.getElementById('stat-spent'),
@@ -57,6 +60,38 @@ function init() {
             showToast("Budget mis à jour");
         };
     }
+
+    // 🚀 Injecter des données d'exemple si aucune dépense n'existe
+    if (AppState.expenses.length === 0) {
+        injectSampleData();
+    }
+
+    // 🏗️ Restauration de l'onglet actif au démarrage
+    if (AppState.activeTab !== 'expenses') {
+        const savedTabBtn = document.querySelector(`.nav-btn[data-tab="${AppState.activeTab}"]`);
+        if (savedTabBtn) savedTabBtn.click();
+    }
+
+    // 💾 Gestion du brouillon (Persistance des entrées)
+    const savedDraft = JSON.parse(localStorage.getItem(APP_CONFIG.draftKey));
+    if (savedDraft) {
+        elements.form.desc.value = savedDraft.desc || '';
+        elements.form.amount.value = savedDraft.amount || '';
+        elements.form.category.value = savedDraft.category || 'AUTRE';
+    }
+
+    const saveDraft = () => {
+        localStorage.setItem(APP_CONFIG.draftKey, JSON.stringify({
+            desc: elements.form.desc.value,
+            amount: elements.form.amount.value,
+            category: elements.form.category.value
+        }));
+    };
+
+    elements.form.desc.addEventListener('input', saveDraft);
+    elements.form.amount.addEventListener('input', saveDraft);
+    elements.form.category.addEventListener('change', saveDraft);
+
     updateMonthDisplay();
 }
 
@@ -68,6 +103,7 @@ elements.navBtns.forEach(btn => {
         btn.classList.add('active');
         document.getElementById(`${target}-tab`).classList.add('active');
         AppState.activeTab = target;
+        localStorage.setItem(APP_CONFIG.tabKey, target);
         elements.monthSelector.style.display = (target === 'yearly') ? 'none' : 'flex';
         render();
     };
@@ -86,6 +122,11 @@ elements.prevMonthBtn.onclick = () => {
 
 elements.nextMonthBtn.onclick = () => {
     AppState.currentViewDate.setMonth(AppState.currentViewDate.getMonth() + 1);
+    updateMonthDisplay();
+};
+
+elements.todayBtn.onclick = () => {
+    AppState.currentViewDate = new Date();
     updateMonthDisplay();
 };
 
@@ -117,12 +158,13 @@ function render() {
     
     monthlyExpenses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(exp => {
         const catColor = CATEGORY_THEMES[exp.category] || CATEGORY_THEMES.AUTRE;
+        const dateStr = new Date(exp.timestamp).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
         const div = document.createElement('div');
         div.className = 'expense-item';
         div.innerHTML = `
             <div class="exp-info">
                 <strong style="font-size:0.9rem">${escapeHtml(exp.description)}</strong>
-                <small style="color:${catColor}; font-size:0.65rem; font-weight:700;">${exp.category}</small>
+                <small style="color:${catColor}; font-size:0.65rem; font-weight:700;">${exp.category} • ${dateStr}</small>
             </div>
             <div class="exp-amount">
                 <span style="color:${catColor}; font-size:0.95rem">-${exp.amount.toFixed(2)}€</span>
@@ -133,10 +175,11 @@ function render() {
     });
 
     if (AppState.activeTab === 'stats') updateCharts(monthlyExpenses, totalSpent);
+    if (AppState.activeTab === 'stats') renderDailySummary(monthlyExpenses);
     if (AppState.activeTab === 'yearly') renderYearlyView(viewYear);
 }
 
-let categoryChart = null, comparisonChart = null, yearlyChart = null;
+let categoryChart = null, comparisonChart = null, yearlyChart = null, dailyChart = null;
 
 function updateCharts(data, totalSpent) {
     const ctxCat = document.getElementById('categoryChart');
@@ -233,6 +276,56 @@ function renderYearlyView(year) {
 }
 
 /**
+ * 📊 Affiche un résumé des dépenses par jour pour le mois en cours.
+ */
+function renderDailySummary(monthlyExpenses) {
+    const ctxDaily = document.getElementById('dailyChart');
+    if (!ctxDaily) return;
+
+    const year = AppState.currentViewDate.getFullYear();
+    const month = AppState.currentViewDate.getMonth();
+    
+    // Calcul du nombre de jours dans le mois affiché
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const dailyData = new Array(daysInMonth).fill(0);
+
+    // Remplissage des données
+    monthlyExpenses.forEach(exp => {
+        const d = new Date(exp.timestamp);
+        if (d.getMonth() === month && d.getFullYear() === year) {
+            dailyData[d.getDate() - 1] += exp.amount;
+        }
+    });
+
+    if (dailyChart) dailyChart.destroy();
+    dailyChart = new Chart(ctxDaily, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Dépenses (€)',
+                data: dailyData,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 0 } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+/**
  * 🚀 Simulation de données pour l'année 2026
  */
 window.injectSampleData = () => {
@@ -298,18 +391,61 @@ elements.form.addBtn.onclick = () => {
     const desc = elements.form.desc.value;
     const amount = parseFloat(elements.form.amount.value);
     const category = elements.form.category.value;
-    if (desc && amount > 0) {
+    if (desc.trim() && !isNaN(amount) && amount > 0) {
         AppState.expenses.push({ id: Date.now(), description: desc, amount: amount, category: category, timestamp: AppState.currentViewDate.toISOString() });
         localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(AppState.expenses));
-        elements.form.desc.value = ''; elements.form.amount.value = '';
+        elements.form.desc.value = ''; 
+        elements.form.amount.value = '';
+        localStorage.removeItem(APP_CONFIG.draftKey);
         render(); showToast("Dépense enregistrée");
+    } else {
+        showToast("Veuillez remplir tous les champs correctement");
     }
 };
 
 window.deleteExpense = (id) => {
+    if (!confirm("Voulez-vous vraiment supprimer cette dépense ?")) return;
     AppState.expenses = AppState.expenses.filter(e => e.id !== id);
     localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(AppState.expenses));
     render();
+};
+
+window.resetExpenses = () => {
+    if (!confirm("Voulez-vous vraiment supprimer TOUTES vos dépenses ? Cette action est irréversible.")) return;
+    AppState.expenses = [];
+    localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(AppState.expenses));
+    render();
+    showToast("Toutes les dépenses ont été réinitialisées");
+};
+
+/**
+ * 💾 Exportation des données (Sauvegarde externe)
+ * Permet de télécharger un fichier CSV contenant toutes les dépenses.
+ */
+window.exportToCSV = () => {
+    if (AppState.expenses.length === 0) {
+        showToast("Aucune dépense à sauvegarder");
+        return;
+    }
+
+    const headers = ["Date", "Description", "Montant (€)", "Catégorie"];
+    const csvRows = AppState.expenses.map(exp => {
+        const date = new Date(exp.timestamp).toLocaleDateString('fr-FR');
+        const desc = `"${exp.description.replace(/"/g, '""')}"`;
+        return [date, desc, exp.amount.toFixed(2), exp.category].join(",");
+    });
+
+    // Ajout du BOM UTF-8 pour la compatibilité Excel
+    const csvString = "\uFEFF" + headers.join(",") + "\n" + csvRows.join("\n");
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    
+    link.href = URL.createObjectURL(blob);
+    link.download = `sauvegarde_budget_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Fichier CSV sauvegardé");
 };
 
 function showToast(msg) {
