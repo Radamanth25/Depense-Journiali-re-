@@ -1,16 +1,15 @@
 /**
  * 📱 Service Worker - Budget Pixel v3.0.0
- * Network First Strategy (Privilégie le contenu frais)
+ * Network First Strategy (Vrai Network First)
  */
 
-const CACHE_NAME = 'budget-pixel-v3.1.0';
+const CACHE_NAME = 'budget-pixel-v3.2.0';
 const URLS_TO_CACHE = [
     '/',
     '/index.html',
     '/app.js',
     '/style.css',
-    '/manifest.json',
-    '/sw.js'
+    '/manifest.json'
 ];
 
 // ============================================
@@ -53,48 +52,30 @@ self.addEventListener('activate', (event) => {
 });
 
 // ============================================
-// 🌐 FETCH - CACHE FIRST STRATEGY
+// 🌐 FETCH - NETWORK FIRST STRATEGY
 // ============================================
 
 self.addEventListener('fetch', (event) => {
-    // Ignorer les requêtes non-GET
-    if (event.request.method !== 'GET') {
-        return;
-    }
+    if (event.request.method !== 'GET') return;
 
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                // Retourner du cache si disponible
-                if (response) {
-                    console.log('✅ Cache:', event.request.url);
-                    return response;
-                }
-
-                // Sinon, récupérer du réseau
-                return fetch(event.request)
-                    .then((response) => {
-                        // Vérifier la réponse
-                        if (!response || response.status !== 200 || response.type === 'error') {
-                            return response;
-                        }
-
-                        // Cloner et mettre en cache
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME)
-                            .then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-
-                        return response;
-                    })
-                    .catch(() => {
-                        console.warn('⚠️ Mode offline:', event.request.url);
-                        return new Response('Mode offline - Contenu non disponible', {
-                            status: 503,
-                            statusText: 'Service Unavailable'
-                        });
+                // Si on a du réseau, on met à jour le cache
+                if (response && response.status === 200) {
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
                     });
+                }
+                return response;
+            })
+            .catch(() => {
+                // Si pas de réseau, on cherche dans le cache
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) return cachedResponse;
+                    return new Response('Contenu indisponible hors-ligne', { status: 503 });
+                });
             })
     );
 });
