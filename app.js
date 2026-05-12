@@ -1,7 +1,9 @@
 /**
- * 💎 Budget Pixel - Modern Edition
+ * 💎 Gestion - Modern Edition
  * Version 5.3.1 - Simulation de données pour 2026
  */
+
+Chart.register(ChartDataLabels);
 
 const APP_CONFIG = {
     version: '5.3.1',
@@ -32,6 +34,7 @@ const elements = {
     navBtns: document.querySelectorAll('.nav-btn[data-tab]'),
     monthSelector: document.getElementById('month-selector'),
     monthDisplay: document.getElementById('current-month-display'),
+    todayDateDisplay: document.getElementById('today-date-display'),
     prevMonthBtn: document.getElementById('prev-month'),
     nextMonthBtn: document.getElementById('next-month'),
     todayBtn: document.getElementById('today-btn'),
@@ -112,6 +115,11 @@ elements.navBtns.forEach(btn => {
 function updateMonthDisplay() {
     const options = { month: 'long', year: 'numeric' };
     elements.monthDisplay.textContent = AppState.currentViewDate.toLocaleDateString('fr-FR', options);
+
+    if (elements.todayDateDisplay) {
+        const today = new Date();
+        elements.todayDateDisplay.textContent = today.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
     render();
 }
 
@@ -169,6 +177,11 @@ function render() {
     const now = new Date();
     const isCurrentMonth = viewMonth === now.getMonth() && viewYear === now.getFullYear();
     elements.todayBtn.style.display = (isCurrentMonth || AppState.activeTab === 'yearly') ? 'none' : 'block';
+    
+    // 📅 Masquer la date d'aujourd'hui si on n'est pas sur le mois en cours
+    if (elements.todayDateDisplay) {
+        elements.todayDateDisplay.style.display = isCurrentMonth ? 'block' : 'none';
+    }
 
     const monthlyExpenses = AppState.expenses.filter(exp => {
         const d = new Date(exp.timestamp);
@@ -215,19 +228,10 @@ function render() {
     if (AppState.activeTab === 'yearly') renderYearlyView(viewYear);
 }
 
-let categoryChart = null, comparisonChart = null, yearlyChart = null, dailyChart = null;
+let categoryChart = null, yearlyChart = null, dailyChart = null;
 
 function updateCharts(data, totalSpent) {
     const ctxCat = document.getElementById('categoryChart');
-    const ctxComp = document.getElementById('comparisonChart');
-    const diffDisplay = document.getElementById('budget-diff-value');
-    if (!ctxCat || !ctxComp) return;
-
-    const remaining = AppState.budget - totalSpent;
-    if (diffDisplay) {
-        diffDisplay.textContent = `${remaining.toFixed(2)} €`;
-        diffDisplay.style.color = remaining >= 0 ? '#10b981' : '#ef4444';
-    }
 
     const catTotals = {};
     data.forEach(exp => catTotals[exp.category] = (catTotals[exp.category] || 0) + exp.amount);
@@ -240,24 +244,50 @@ function updateCharts(data, totalSpent) {
             datasets: [{
                 data: Object.values(catTotals),
                 backgroundColor: Object.keys(catTotals).map(l => CATEGORY_THEMES[l] || CATEGORY_THEMES.AUTRE),
-                borderWidth: 0
+                borderWidth: 3,
+                borderColor: '#0f172a', // Couleur de fond pour séparer les segments
+                hoverOffset: 20
             }]
         },
-        options: { maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } } }
-    });
-
-    if (comparisonChart) comparisonChart.destroy();
-    comparisonChart = new Chart(ctxComp, {
-        type: 'bar',
-        data: {
-            labels: ['Budget', 'Dépensé'],
-            datasets: [{
-                data: [AppState.budget, totalSpent],
-                backgroundColor: ['#8b5cf6', totalSpent > AppState.budget ? '#ef4444' : '#10b981'],
-                borderRadius: 8
-            }]
-        },
-        options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
+        options: { 
+            maintainAspectRatio: false, 
+            cutout: '70%', 
+            plugins: { 
+                legend: { display: false },
+                datalabels: {
+                    color: '#94a3b8',
+                    textAlign: 'center',
+                    font: { weight: '700', size: 10 },
+                    formatter: (value, ctx) => {
+                        const label = ctx.chart.data.labels[ctx.dataIndex];
+                        let total = 0;
+                        ctx.chart.data.datasets[0].data.forEach(d => total += d);
+                        const percentage = (value * 100 / total).toFixed(1);
+                        return `${label}\n${value.toFixed(2)}€ (${percentage}%)`;
+                    },
+                    anchor: 'end',
+                    align: 'end',
+                    offset: 12
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    padding: 12,
+                    titleFont: { size: 14 },
+                    bodyFont: { size: 13 },
+                    cornerRadius: 8,
+                    displayColors: true,
+                    callbacks: {
+                        label: (context) => {
+                            const val = context.parsed || 0;
+                            let total = 0;
+                            context.chart.data.datasets[0].data.forEach(d => total += d);
+                            const percentage = (val * 100 / total).toFixed(1);
+                            return ` ${val.toFixed(2)}€ (${percentage}%)`;
+                        }
+                    }
+                }
+            } 
+        }
     });
 }
 
@@ -324,39 +354,53 @@ function renderDailySummary(monthlyExpenses) {
     // Calcul du nombre de jours dans le mois affiché
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    const dailyData = new Array(daysInMonth).fill(0);
 
-    // Remplissage des données
+    // Initialisation des données par catégorie
+    const datasetsMap = {};
+    Object.keys(CATEGORY_THEMES).forEach(cat => {
+        datasetsMap[cat] = new Array(daysInMonth).fill(0);
+    });
+
+    // Remplissage des données par jour et par catégorie
     monthlyExpenses.forEach(exp => {
         const d = new Date(exp.timestamp);
-        if (d.getMonth() === month && d.getFullYear() === year) {
-            dailyData[d.getDate() - 1] += exp.amount;
+        if (d.getMonth() === month && d.getFullYear() === year && datasetsMap[exp.category]) {
+            datasetsMap[exp.category][d.getDate() - 1] += exp.amount;
         }
     });
 
+    const datasets = Object.keys(datasetsMap).map(cat => ({
+        label: cat,
+        data: datasetsMap[cat],
+        backgroundColor: CATEGORY_THEMES[cat],
+        borderRadius: 4
+    })).filter(ds => ds.data.some(v => v > 0)); // On ne garde que les catégories avec des dépenses
+
     if (dailyChart) dailyChart.destroy();
     dailyChart = new Chart(ctxDaily, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                label: 'Dépenses (€)',
-                data: dailyData,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 2,
-                borderWidth: 2
-            }]
+            datasets: datasets
         },
         options: {
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 0 } }
+                y: { 
+                    stacked: true,
+                    beginAtZero: true, 
+                    grid: { color: 'rgba(255,255,255,0.05)' }, 
+                    ticks: { color: '#94a3b8', font: { size: 9 } } 
+                },
+                x: { 
+                    stacked: true,
+                    grid: { display: false }, 
+                    ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 0 } 
+                }
             },
-            plugins: { legend: { display: false } }
+            plugins: { 
+                legend: { display: false } // On garde l'interface épurée, les couleurs suffisent
+            }
         }
     });
 }

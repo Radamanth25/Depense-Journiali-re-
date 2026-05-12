@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0f172a">
-    <title>💎 Budget Pixel - Modern Edition</title>
+    <title>💎 Gestion - Modern Edition</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 <body>
 
     <header class="header">
         <div class="container">
-            <h1>Budget Pixel</h1>
+            <h1>Gestion</h1>
             <nav class="nav-tabs">
                 <button class="nav-btn active" data-tab="expenses">DÉPENSES</button>
                 <button class="nav-btn" data-tab="stats">STATS</button>
@@ -22,7 +23,10 @@
         </div>
         <div id="month-selector" class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem;">
             <button id="prev-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&lt;</button>
-            <span id="current-month-display" style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;"></span>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                <span id="current-month-display" style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;"></span>
+                <span id="today-date-display" style="font-size: 0.6rem; color: var(--text-mid); font-weight: 600; opacity: 0.8;"></span>
+            </div>
             <button id="next-month" class="nav-btn" style="padding: 0.4rem 0.8rem;">&gt;</button>
         </div>
     </header>
@@ -68,16 +72,6 @@
         </section>
 
         <section id="stats-tab" class="tab-content">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 0.7rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Reste à vivre (Mois)</h3>
-                    <span id="budget-diff-value" style="font-weight: 900; font-size: 1.2rem;">0.00 €</span>
-                </div>
-                <div style="height: 180px; position: relative;">
-                    <canvas id="comparisonChart"></canvas>
-                </div>
-            </div>
-
             <div class="card">
                 <h3 style="text-align: center; margin-bottom: 1.5rem; font-size: 0.8rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Répartition par catégorie</h3>
                 <div style="height: 250px; position: relative;">

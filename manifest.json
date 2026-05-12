@@ -1,6 +1,6 @@
 {
-  "name": "Budget Pixel - Suivi des Dépenses",
-  "short_name": "Budget Pixel",
+  "name": "Gestion - Suivi des Dépenses",
+  "short_name": "Gestion",
   "description": "Application PWA pour gérer vos dépenses quotidiennes avec statistiques, catégories et notifications",
   "start_url": ".",
   "scope": ".",
