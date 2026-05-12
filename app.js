@@ -399,7 +399,8 @@ function renderDailySummary(monthlyExpenses) {
                 }
             },
             plugins: { 
-                legend: { display: false } // On garde l'interface épurée, les couleurs suffisent
+                legend: { display: false },
+                datalabels: { display: false }
             }
         }
     });

@@ -55,7 +55,21 @@
             </div>
 
             <div class="card">
-                <input type="text" id="desc" placeholder="Désignation (ex: Netflix)">
+                <input type="text" id="desc" placeholder="Désignation (ex: Netflix)" list="common-desc">
+                <datalist id="common-desc">
+                    <option value="Netflix">
+                    <option value="Spotify">
+                    <option value="Loyer">
+                    <option value="Courses Alimentaires">
+                    <option value="Carburant">
+                    <option value="Internet (Box)">
+                    <option value="Électricité / Gaz">
+                    <option value="Assurance">
+                    <option value="Restaurant">
+                    <option value="Boulangerie">
+                    <option value="Pharmacie">
+                    <option value="Abonnement Mobile">
+                </datalist>
                 <input type="number" id="amount" placeholder="Montant (€)">
                 <select id="category">
                     <option value="🏠 LOGEMENT">🏠 LOGEMENT</option>
