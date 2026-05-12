@@ -10,7 +10,8 @@ const APP_CONFIG = {
     storageKey: 'budgetPixelExpenses',
     budgetKey: 'budgetPixelBudget',
     draftKey: 'budgetPixelDraft',
-    tabKey: 'budgetPixelActiveTab'
+    tabKey: 'budgetPixelActiveTab',
+    themeKey: 'budgetPixelTheme'
 };
 
 const CATEGORY_THEMES = {
@@ -26,7 +27,8 @@ let AppState = {
     expenses: JSON.parse(localStorage.getItem(APP_CONFIG.storageKey)) || [],
     budget: parseFloat(localStorage.getItem(APP_CONFIG.budgetKey)) || 3000,
     activeTab: localStorage.getItem(APP_CONFIG.tabKey) || 'expenses',
-    currentViewDate: new Date()
+    currentViewDate: new Date(),
+    activeTheme: localStorage.getItem(APP_CONFIG.themeKey) || 'dark' // Thème sombre par défaut
 };
 
 const elements = {
@@ -39,6 +41,7 @@ const elements = {
     nextMonthBtn: document.getElementById('next-month'),
     todayBtn: document.getElementById('today-btn'),
     expenseList: document.getElementById('expense-list'),
+    themeSelector: document.getElementById('theme-selector'), // Nouveau sélecteur de thème
     statBudget: document.getElementById('stat-budget'),
     statSpent: document.getElementById('stat-spent'),
     statRemaining: document.getElementById('stat-remaining'),
@@ -61,6 +64,19 @@ function init() {
             localStorage.setItem(APP_CONFIG.budgetKey, AppState.budget);
             render();
             showToast("Budget mis à jour");
+        };
+    }
+
+    // 🎨 Gestion du thème
+    if (elements.themeSelector) {
+        elements.themeSelector.value = AppState.activeTheme;
+        document.documentElement.setAttribute('data-theme', AppState.activeTheme); // Appliquer le thème au chargement
+        elements.themeSelector.onchange = (e) => {
+            AppState.activeTheme = e.target.value;
+            localStorage.setItem(APP_CONFIG.themeKey, AppState.activeTheme);
+            document.documentElement.setAttribute('data-theme', AppState.activeTheme);
+            showToast(`Thème "${AppState.activeTheme === 'dark' ? 'Sombre' : 'Clair'}" appliqué`);
+            render(); // Re-rendre pour mettre à jour les couleurs des graphiques
         };
     }
 
@@ -527,6 +543,49 @@ window.exportToCSV = () => {
     link.click();
     document.body.removeChild(link);
     showToast("Fichier CSV sauvegardé");
+};
+
+/**
+ * 📥 Importation des données
+ */
+window.importFromCSV = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const content = e.target.result;
+            const lines = content.split('\n').slice(1); // Ignorer l'en-tête
+            const newExpenses = lines.filter(line => line.trim()).map(line => {
+                // Gestion simple du CSV (split par virgule, en ignorant les guillemets)
+                const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                if (!parts || parts.length < 4) return null;
+                
+                const [dateStr, desc, amount, cat] = parts;
+                const [day, month, year] = dateStr.split('/');
+                
+                return {
+                    id: Date.now() + Math.random(),
+                    description: desc.replace(/"/g, ''),
+                    amount: parseFloat(amount),
+                    category: cat.trim(),
+                    timestamp: new Date(year, month - 1, day).toISOString()
+                };
+            }).filter(exp => exp !== null);
+
+            if (confirm(`Importer ${newExpenses.length} dépenses ? Cela s'ajoutera à vos données actuelles.`)) {
+                AppState.expenses = [...AppState.expenses, ...newExpenses];
+                localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(AppState.expenses));
+                render();
+                showToast("Importation réussie !");
+            }
+        } catch (err) {
+            showToast("Erreur lors de l'importation");
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
 };
 
 function showToast(msg) {

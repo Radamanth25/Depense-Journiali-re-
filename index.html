@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0f172a">
     <title>💎 Gestion - Modern Edition</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
@@ -96,6 +96,24 @@
             <div class="card">
                 <label for="budget-input" style="display: block; margin-bottom: 10px; font-size: 0.7rem; color: var(--text-mid); font-weight: 700; text-transform: uppercase;">Modifier mon budget mensuel (€)</label>
                 <input type="number" id="budget-input" placeholder="Ex: 3000">
+            </div>
+
+            <div class="card">
+                <h3 style="text-align: center; margin-bottom: 1rem; font-size: 0.7rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Thème de l'application</h3>
+                <select id="theme-selector" style="width: auto; margin-bottom: 0;">
+                    <option value="dark">Sombre</option>
+                    <option value="light">Clair</option>
+                    <option value="mono">Technique Mono</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <h3 style="text-align: center; margin-bottom: 1rem; font-size: 0.7rem; color: var(--text-mid); letter-spacing: 1px; text-transform: uppercase;">Sauvegarde des données</h3>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="exportToCSV()" class="btn-primary" style="font-size: 0.7rem; padding: 0.6rem; background: var(--secondary-accent);">Exporter (CSV)</button>
+                    <button onclick="document.getElementById('import-file').click()" class="btn-primary" style="font-size: 0.7rem; padding: 0.6rem; background: var(--primary-accent);">Importer (CSV)</button>
+                </div>
+                <input type="file" id="import-file" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
             </div>
 
             <div class="card">

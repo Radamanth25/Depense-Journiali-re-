@@ -1,5 +1,7 @@
-/* 💎 Budget Pixel - Modern Edition v5.1.0 */
-:root {
+/* 💎 Gestion - Modern Edition v5.1.0 */
+
+/* Thème Sombre (par défaut) */
+:root, [data-theme="dark"] {
     --bg-main: #0f172a;
     --bg-card: rgba(30, 41, 59, 0.7);
     --primary-accent: #10b981;
@@ -12,21 +14,56 @@
     --radius: 16px;
     --shadow-soft: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
     --glass: rgba(15, 23, 42, 0.8);
-    /* Couleurs d'alerte */
     --warning: #f59e0b;
     --danger: #ef4444;
+    /* Couleurs pour le dégradé du body */
+    --bg-gradient-primary-color: rgba(16, 185, 129, 0.1);
+    --bg-gradient-secondary-color: rgba(139, 92, 246, 0.1);
+}
+
+/* Thème Clair */
+[data-theme="light"] {
+    --bg-main: #f0f2f5;
+    --bg-card: rgba(255, 255, 255, 0.8);
+    --primary-accent: #0e9f6e;
+    --secondary-accent: #6d28d9;
+    --accent-gradient: linear-gradient(135deg, #0e9f6e 0%, #6d28d9 100%);
+    --text-high: #1f2937;
+    --text-mid: #4b5563;
+    --text-low: #6b7280;
+    --border: rgba(0, 0, 0, 0.1);
+    --radius: 16px;
+    --shadow-soft: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --glass: rgba(255, 255, 255, 0.9);
+    --warning: #d97706;
+    --danger: #dc2626;
+    --bg-gradient-primary-color: rgba(14, 159, 110, 0.05);
+    --bg-gradient-secondary-color: rgba(109, 40, 217, 0.05);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-main);
-    background-image: radial-gradient(circle at top right, rgba(139, 92, 246, 0.1), transparent),
-                      radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent);
+    background-color: var(--bg-main); /* Utilise la variable du thème */
+    background-image: radial-gradient(circle at top right, var(--bg-gradient-secondary-color), transparent),
+                      radial-gradient(circle at bottom left, var(--bg-gradient-primary-color), transparent);
     color: var(--text-high);
     padding-bottom: 100px;
     min-height: 100vh;
+}
+
+/* Overrides pour le thème Mono */
+[data-theme="mono"] body { font-family: 'JetBrains Mono', monospace; }
+[data-theme="mono"] .card, 
+[data-theme="mono"] .nav-btn, 
+[data-theme="mono"] input, 
+[data-theme="mono"] select, 
+[data-theme="mono"] .btn-primary { border: 1px solid var(--primary-accent); border-radius: 0; }
+[data-theme="mono"] input, 
+[data-theme="mono"] select { 
+    background: var(--bg-card); 
+    color: var(--text-high); 
 }
 
 .container { max-width: 500px; margin: 0 auto; padding: 1.2rem; }
@@ -95,8 +132,8 @@ h1 {
 
 /* Formulaire et listes */
 input, select {
-    width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border);
-    padding: 0.8rem; color: #fff; border-radius: 12px; margin-bottom: 0.8rem; font-family: inherit;
+    width: 100%; background: rgba(15, 23, 42, 0.1); border: 1px solid var(--border);
+    padding: 0.8rem; color: var(--text-high); border-radius: 12px; margin-bottom: 0.8rem; font-family: inherit;
 }
 
 .btn-primary {
@@ -141,8 +178,9 @@ input, select {
 #today-btn:active { transform: translateX(-50%) scale(0.9); }
 
 .toast {
-    position: fixed; bottom: 85px; left: 50%; transform: translate(-50%, 150px);
-    background: #1e293b; border: 1px solid var(--primary-accent);
-    padding: 0.8rem 2rem; border-radius: 50px; transition: 0.4s; z-index: 2000; color: #fff;
+    position: fixed; bottom: 85px; left: 50%; transform: translate(-50%, 150px); /* Ajusté pour le bouton Aujourd'hui */
+    background: var(--bg-card); /* Utilise la variable du thème */
+    border: 1px solid var(--border); /* Utilise la variable du thème */
+    padding: 0.8rem 2rem; border-radius: 50px; transition: 0.4s; z-index: 2000; color: var(--text-high); /* Utilise la variable du thème */
 }
 .toast.show { transform: translate(-50%, 0); }
