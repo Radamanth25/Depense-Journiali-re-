@@ -132,27 +132,34 @@ elements.todayBtn.onclick = () => {
 
 // 👆 Gestes de balayage (swipe) pour changer de mois sur mobile
 let touchStartX = 0;
-const SWIPE_THRESHOLD = 50; // Distance minimale pour considérer un balayage
+let touchStartY = 0;
+const SWIPE_THRESHOLD = 80; // Seuil pour éviter les changements accidentels
 
-elements.monthSelector.addEventListener('touchstart', (e) => {
+document.addEventListener('touchstart', (e) => {
     touchStartX = e.touches[0].clientX;
-});
+    touchStartY = e.touches[0].clientY;
+}, { passive: true });
 
-elements.monthSelector.addEventListener('touchend', (e) => {
+document.addEventListener('touchend', (e) => {
+    // Ne pas changer de mois si on est dans la vue annuelle
+    if (AppState.activeTab === 'yearly') return;
+
     const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
     const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
 
-    if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+    // On vérifie que le mouvement horizontal est prédominant sur le vertical
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > SWIPE_THRESHOLD) {
         if (diffX > 0) {
-            // Balayage vers la droite (mois précédent)
             elements.prevMonthBtn.click();
         } else {
-            // Balayage vers la gauche (mois suivant)
             elements.nextMonthBtn.click();
         }
     }
-    touchStartX = 0; // Réinitialiser
-});
+    touchStartX = 0;
+    touchStartY = 0;
+}, { passive: true });
 
 function render() {
     const viewMonth = AppState.currentViewDate.getMonth();
